@@ -8,4 +8,10 @@
 # Vercel
 /.vercel/
 
+# Env
+.env
+.env.*
+!.env.example
+
+# Misc
 tmp

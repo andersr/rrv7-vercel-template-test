@@ -1,5 +1,9 @@
-import { Form, Link, redirect } from "react-router";
-import { generateId } from "~/lib/generateId";
+import { Form, redirect, useNavigation } from "react-router";
+import { ENV } from "~/lib/.server/ENV";
+import { generateId } from "~/lib/.server/generateId";
+import { getAsstResponseData } from "~/lib/.server/openai/getAsstResponseData";
+import { NEW_GAME_PROMPT } from "~/lib/.server/openai/prompts";
+import { redisCache } from "~/lib/.server/redis/redis";
 import type { Route } from "./+types/_index";
 
 export function meta({}: Route.MetaArgs) {
@@ -10,27 +14,40 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export function loader({ context }: Route.LoaderArgs) {
-  return { message: context.VALUE_FROM_VERCEL };
+  return {};
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  // let formData = await request.formData();
-  // let title = formData.get("title");
+  const asstResponse = await getAsstResponseData({
+    prompt: NEW_GAME_PROMPT,
+    asstId: ENV.OPENAI_ASST_ID_CREATE_GAME,
+  });
+  console.log("asstResponse: ", asstResponse);
   const id = generateId();
-  // let project = await fakeDb.updateProject({ title });
+
+  await redisCache.set<string>(id, JSON.stringify(asstResponse), {
+    // ex: 60 * 60, // TODO: add expiration
+  });
+
   return redirect(`/games/${id}`);
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
+  const navigation = useNavigation();
+  const isNavigating = Boolean(navigation.location);
+  console.log("isNavigating: ", isNavigating);
   return (
     <main className="p-4">
-      <h1>Project</h1>
+      <h1>Trivia Game Demo</h1>
       <Form method="post">
-        <button type="submit">Submit</button>
+        <button
+          type="submit"
+          disabled={isNavigating}
+          className="border border-slate-300 rounded p-2 disabled:text-opacity-50"
+        >
+          {isNavigating ? "Creating game..." : "New Trivia Game"}
+        </button>
       </Form>
-      <div>
-        <Link to="/foo">FOO</Link>
-      </div>
     </main>
   );
 }
