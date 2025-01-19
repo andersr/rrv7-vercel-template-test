@@ -22,7 +22,6 @@ export async function action({ request }: Route.ActionArgs) {
     prompt: NEW_GAME_PROMPT,
     asstId: ENV.OPENAI_ASST_ID_CREATE_GAME,
   });
-  console.log("asstResponse: ", asstResponse);
   const id = generateId();
 
   await redisCache.set<string>(id, JSON.stringify(asstResponse), {
@@ -35,7 +34,6 @@ export async function action({ request }: Route.ActionArgs) {
 export default function Home({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isNavigating = Boolean(navigation.location);
-  console.log("isNavigating: ", isNavigating);
   return (
     <main className="p-4">
       <h1>Trivia Game Demo</h1>

@@ -23,31 +23,13 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   };
 }
 
-// export async function action({ request, params }: Route.ActionArgs) {
-//   try {
-//     const game: TriviaGame | null = await redisCache.get<TriviaGame | null>(
-//       params.id
-//     );
-
-//     if (!game) {
-//       throw redirect(`/?error=${encodeURIComponent(NO_GAME_FOUND_ERROR)}`);
-//     }
-//     let formData = await request.formData();
-//     let choice = formData.get("choice");
-//     return null;
-//   } catch (error) {
-//     console.log("error: ", error);
-//     return null;
-//   }
-// }
-
 type GameView = "question" | "answer" | "end";
 
 export default function GameDetails({ loaderData }: Route.ComponentProps) {
   const [currentView, setCurrentView] = useState<GameView>("question");
   const [questionIndex, setQuestionIndex] = useState(0);
+  console.log("questionIndex: ", questionIndex);
   const [selectedChoice, setSelectedChoice] = useState("");
-  console.log("selectedChoice: ", selectedChoice);
   const [correctAnswers, setCorrectAnswers] = useState(0);
 
   const game = loaderData?.game;
@@ -55,19 +37,21 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
     ? game?.questions[questionIndex]
     : null;
 
+  console.log("game?.questions.length: ", game?.questions.length);
   function handleChoice() {
     if (selectedChoice === currentQuestion?.correctAnswer) {
       setCorrectAnswers(correctAnswers + 1);
     }
+    setCurrentView("answer");
+  }
+  function handleNext() {
     if (questionIndex === game?.questions.length - 1) {
       setCurrentView("end");
     } else {
-      setCurrentView("answer");
+      setQuestionIndex(questionIndex + 1);
+      setSelectedChoice("");
+      setCurrentView("question");
     }
-  }
-  function handleNext() {
-    setQuestionIndex(questionIndex + 1);
-    setCurrentView("question");
   }
 
   function playAgain() {
@@ -82,9 +66,9 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
       <div>
         <div>
           Question {questionIndex + 1} of {game?.questions.length}
+          <h2>Category: {currentQuestion?.category}</h2>
+          <h2>{currentQuestion?.question}</h2>
         </div>
-        <h2>Category: {currentQuestion?.category}</h2>
-        <h2>{currentQuestion?.question}</h2>
         <ul>
           {currentQuestion?.choices.map((c) => (
             <li key={c}>
@@ -112,15 +96,25 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
     ),
     answer: (
       <div>
-        <h1>Result</h1>
-        <p>Correct answer: {currentQuestion?.correctAnswer}</p>
+        <div>
+          Question {questionIndex + 1} of {game?.questions.length}
+          <h2>Category: {currentQuestion?.category}</h2>
+          <h2>{currentQuestion?.question}</h2>
+        </div>
         <p>Your answer: {selectedChoice}</p>
+        <p>
+          {currentQuestion?.correctAnswer === selectedChoice
+            ? "Correct answer!"
+            : `Sorry, the correct answer is: ${currentQuestion?.correctAnswer}.`}
+        </p>
         <p>
           <button
             onClick={handleNext}
             className="border border-slate-300 rounded p-2"
           >
-            Next
+            {questionIndex === game?.questions.length - 1
+              ? "Continue"
+              : "Next Question"}
           </button>
         </p>
       </div>
