@@ -36,7 +36,6 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
     ? game?.questions[questionIndex]
     : null;
 
-  console.log("game?.questions.length: ", game?.questions.length);
   function handleChoice() {
     if (selectedChoice === currentQuestion?.correctAnswer) {
       setCorrectAnswers(correctAnswers + 1);
