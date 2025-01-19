@@ -1,5 +1,6 @@
 import { useState, type JSX } from "react";
 import { Link, redirect } from "react-router";
+import { twMerge } from "tailwind-merge";
 import { redisCache } from "~/lib/.server/redis/redis";
 import type { TriviaGame } from "~/types/game";
 import type { Route } from "./+types/games.$id";
@@ -67,13 +68,19 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
           <h2>Category: {currentQuestion?.category}</h2>
           <h2>{currentQuestion?.question}</h2>
         </div>
-        <ul>
+        <ul className=" list-none pl-0">
           {currentQuestion?.choices.map((c) => (
             <li key={c}>
-              <label>
-                {c}{" "}
+              <label
+                className={twMerge(
+                  "label cursor-pointer border rounded px-2 hover:bg-slate-100",
+                  selectedChoice === c ? "bg-slate-200" : ""
+                )}
+              >
+                <span className="label-text">{c}</span>
                 <input
                   type="radio"
+                  className="radio"
                   value={c}
                   name="choice"
                   checked={selectedChoice === c}
@@ -86,7 +93,7 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
         <button
           disabled={selectedChoice === ""}
           onClick={handleChoice}
-          className="border border-slate-300 rounded p-2 disabled:opacity-50 "
+          className="btn"
         >
           Submit Answer
         </button>
@@ -106,10 +113,7 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
             : `Sorry, the correct answer is: ${currentQuestion?.correctAnswer}.`}
         </p>
         <p>
-          <button
-            onClick={handleNext}
-            className="border border-slate-300 rounded p-2"
-          >
+          <button onClick={handleNext} className="btn">
             {questionIndex === game?.questions.length - 1
               ? "Continue"
               : "Next Question"}
@@ -122,15 +126,12 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
         <h1>Results</h1>
         <p>Correct answers: {correctAnswers}</p>
         <p>
-          <button
-            onClick={playAgain}
-            className="border border-slate-300 rounded p-2"
-          >
+          <button onClick={playAgain} className="btn">
             Play Again
           </button>
         </p>
         <p>
-          <Link className="border border-slate-300 rounded p-2" to="/">
+          <Link className="btn" to="/">
             New Game
           </Link>
         </p>

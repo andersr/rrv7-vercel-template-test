@@ -1,11 +1,11 @@
 import { Form, redirect, useNavigation } from "react-router";
+import { twMerge } from "tailwind-merge";
 import { ENV } from "~/lib/.server/ENV";
 import { generateId } from "~/lib/.server/generateId";
 import { getAsstResponseData } from "~/lib/.server/openai/getAsstResponseData";
 import { NEW_GAME_PROMPT } from "~/lib/.server/openai/prompts";
 import { redisCache } from "~/lib/.server/redis/redis";
 import type { Route } from "./+types/_index";
-
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "New React Router App" },
@@ -35,17 +35,17 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isNavigating = Boolean(navigation.location);
   return (
-    <main className="p-4">
+    <div>
       <h1>Trivia Game Demo</h1>
       <Form method="post">
         <button
           type="submit"
           disabled={isNavigating}
-          className="border border-slate-300 rounded p-2 disabled:text-opacity-50"
+          className={twMerge("btn disabled:btn-disabled")}
         >
           {isNavigating ? "Creating game..." : "New Trivia Game"}
         </button>
       </Form>
-    </main>
+    </div>
   );
 }
