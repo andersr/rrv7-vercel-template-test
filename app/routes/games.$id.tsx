@@ -28,7 +28,6 @@ type GameView = "question" | "answer" | "end";
 export default function GameDetails({ loaderData }: Route.ComponentProps) {
   const [currentView, setCurrentView] = useState<GameView>("question");
   const [questionIndex, setQuestionIndex] = useState(0);
-  console.log("questionIndex: ", questionIndex);
   const [selectedChoice, setSelectedChoice] = useState("");
   const [correctAnswers, setCorrectAnswers] = useState(0);
 
