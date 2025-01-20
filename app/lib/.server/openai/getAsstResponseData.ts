@@ -1,14 +1,16 @@
-import { getAsstOutputStream } from './getAssistantOutputStream';
-import { requireThread } from './requireThread';
+import { getAsstOutputStream } from "./getAssistantOutputStream";
 
-export async function getAsstResponseData({ prompt, asstId }: { prompt: string; asstId: string }) {
-	const thread = await requireThread({
-		prompt
-	});
-	const output = await getAsstOutputStream({
-		asstId,
-		threadId: thread.id
-	});
+export async function getAsstResponseData({
+  asstId,
+  threadId,
+}: {
+  asstId: string;
+  threadId: string;
+}) {
+  const output = await getAsstOutputStream({
+    asstId,
+    threadId,
+  });
 
-	return JSON.parse(output);
+  return JSON.parse(output);
 }

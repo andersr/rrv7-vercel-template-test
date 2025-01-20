@@ -18,3 +18,21 @@ export async function requireThread({ prompt }: { prompt: string }) {
     throw new Error("error creating thread");
   }
 }
+
+// export async function createThread({ prompt }: { prompt: string }) {
+//   try {
+//     const input: ThreadCreateParams = {
+//       messages: [
+//         {
+//           content: prompt,
+//           role: "user",
+//         },
+//       ],
+//     };
+
+//     return await openai.beta.threads.create(input);
+//   } catch (error) {
+//     console.error("error: ", error);
+//     throw new Error("error creating thread");
+//   }
+// }

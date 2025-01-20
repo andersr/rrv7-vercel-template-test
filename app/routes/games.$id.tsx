@@ -1,32 +1,76 @@
-import { useState, type JSX } from "react";
-import { Link, redirect } from "react-router";
+import { useEffect, useState, type JSX } from "react";
+import { Form, redirect, useLocation, useNavigation } from "react-router";
 import { twMerge } from "tailwind-merge";
+import { ENV } from "~/lib/.server/ENV";
+import { generateId } from "~/lib/.server/generateId";
+import { getAsstResponseData } from "~/lib/.server/openai/getAsstResponseData";
+import { NEW_GAME_PROMPT } from "~/lib/.server/openai/prompts";
+import { requireThread } from "~/lib/.server/openai/requireThread";
 import { redisCache } from "~/lib/.server/redis/redis";
-import type { TriviaGame } from "~/types/game";
+import type { AssistantPayload } from "~/types/assistant";
 import type { Route } from "./+types/games.$id";
 
 const NO_GAME_FOUND_ERROR = "Sorry, no game found.";
-export async function loader({ params, request }: Route.LoaderArgs) {
+type GameView = "question" | "answer" | "end";
+
+export function meta({}: Route.MetaArgs) {
+  return [{ title: "Trivia Game Demo" }];
+}
+
+export async function loader({ params }: Route.LoaderArgs) {
   if (!params.id) {
     throw redirect(`/?error=${encodeURIComponent(NO_GAME_FOUND_ERROR)}`);
   }
 
-  const game: TriviaGame | null = await redisCache.get<TriviaGame | null>(
-    params.id
-  );
+  const payload = await redisCache.get<AssistantPayload | null>(params.id);
 
-  if (!game) {
+  if (!payload) {
     throw redirect(`/?error=${encodeURIComponent(NO_GAME_FOUND_ERROR)}`);
   }
   return {
     id: params?.id,
-    game,
+    game: payload.game,
   };
 }
 
-type GameView = "question" | "answer" | "end";
+// TODO: use for new game after first game, maybe single resource route for both first and additional games
+export async function action({ request, params }: Route.ActionArgs) {
+  let threadId: string = "";
+
+  const currentGame = await redisCache.get<AssistantPayload | null>(params.id);
+  console.log("currentGame: ", currentGame);
+
+  if (currentGame && currentGame?.threadId) {
+    threadId = currentGame?.threadId;
+  } else {
+    const thread = await requireThread({
+      prompt: NEW_GAME_PROMPT,
+    });
+    threadId = thread.id;
+  }
+  console.log("threadId: ", threadId);
+
+  const asstResponse = await getAsstResponseData({
+    asstId: ENV.OPENAI_ASST_ID_CREATE_GAME,
+    threadId,
+  });
+  const id = generateId();
+
+  await redisCache.set<string>(
+    id,
+    JSON.stringify({
+      game: asstResponse,
+      threadId,
+    } satisfies AssistantPayload)
+  );
+
+  return redirect(`/games/${id}`);
+}
 
 export default function GameDetails({ loaderData }: Route.ComponentProps) {
+  const navigation = useNavigation();
+  const location = useLocation();
+  const isNavigating = Boolean(navigation.location);
   const [currentView, setCurrentView] = useState<GameView>("question");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState("");
@@ -60,12 +104,15 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
     setCurrentView("question");
   }
 
+  useEffect(() => {
+    playAgain();
+  }, [location.pathname]);
+
   const gameViews: Record<GameView, JSX.Element> = {
     question: (
       <div>
         <div>
           Question {questionIndex + 1} of {game?.questions.length}
-          <h2>Category: {currentQuestion?.category}</h2>
           <h2>{currentQuestion?.question}</h2>
         </div>
         <ul className=" list-none pl-0">
@@ -101,9 +148,8 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
     ),
     answer: (
       <div>
-        <div>
+        <div className="text-slate-500">
           Question {questionIndex + 1} of {game?.questions.length}
-          <h2>Category: {currentQuestion?.category}</h2>
           <h2>{currentQuestion?.question}</h2>
         </div>
         <p>Your answer: {selectedChoice}</p>
@@ -130,11 +176,17 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
             Play Again
           </button>
         </p>
-        <p>
-          <Link className="btn" to="/">
-            New Game
-          </Link>
-        </p>
+        <div>
+          <Form method="post">
+            <button
+              type="submit"
+              disabled={isNavigating}
+              className={twMerge("btn disabled:btn-disabled")}
+            >
+              {isNavigating ? "Creating game..." : "New Trivia Game"}
+            </button>
+          </Form>
+        </div>
       </div>
     ),
   };

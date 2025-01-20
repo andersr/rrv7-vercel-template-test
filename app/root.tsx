@@ -26,16 +26,18 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="h-full" data-theme="lemonade">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
       </head>
-      <body className="h-full">
-        <div className="mx-auto md:w-1/3 h-full flex flex-col p-4">
-          <main className="prose container flex-1">{children}</main>
+      <body className="h-full bg-gradient-to-r from-base-200 to-accent md:py-4">
+        <div className="mx-auto md:w-1/3 h-full flex flex-col">
+          <main className="prose prose-h1:text-primary-content container flex-1">
+            {children}
+          </main>
         </div>
         <ScrollRestoration />
         <Scripts />
