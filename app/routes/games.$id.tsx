@@ -33,8 +33,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   };
 }
 
-// TODO: use for new game after first game, maybe single resource route for both first and additional games
-export async function action({ request, params }: Route.ActionArgs) {
+export async function action({ params }: Route.ActionArgs) {
   let threadId: string = "";
 
   const currentGame = await redisCache.get<AssistantPayload | null>(params.id);
@@ -112,8 +111,10 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
     question: (
       <div>
         <div>
-          Question {questionIndex + 1} of {game?.questions.length}
           <h2>{currentQuestion?.question}</h2>
+          <p className="text-sm">
+            Question {questionIndex + 1} of {game?.questions.length}
+          </p>
         </div>
         <ul className=" list-none pl-0">
           {currentQuestion?.choices.map((c) => (
@@ -148,15 +149,21 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
     ),
     answer: (
       <div>
-        <div className="text-slate-500">
-          Question {questionIndex + 1} of {game?.questions.length}
+        <div>
           <h2>{currentQuestion?.question}</h2>
+          <p className="text-sm">
+            Question {questionIndex + 1} of {game?.questions.length}
+          </p>
         </div>
         <p>Your answer: {selectedChoice}</p>
         <p>
-          {currentQuestion?.correctAnswer === selectedChoice
-            ? "Correct answer!"
-            : `Sorry, the correct answer is: ${currentQuestion?.correctAnswer}.`}
+          {currentQuestion?.correctAnswer === selectedChoice ? (
+            <span className="text-primary font-semibold">Correct answer!</span>
+          ) : (
+            <span className="text-red-500 font-semibold">
+              Sorry, the correct answer is: {currentQuestion?.correctAnswer}.
+            </span>
+          )}
         </p>
         <p>
           <button onClick={handleNext} className="btn">
@@ -169,7 +176,7 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
     ),
     end: (
       <div>
-        <h1>Results</h1>
+        <h2>Results</h2>
         <p>Correct answers: {correctAnswers}</p>
         <p>
           <button onClick={playAgain} className="btn">
@@ -186,6 +193,11 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
               {isNavigating ? "Creating game..." : "New Trivia Game"}
             </button>
           </Form>
+          {isNavigating && (
+            <div className="mt-4 text-sm text-secondary">
+              This might take a moment...
+            </div>
+          )}
         </div>
       </div>
     ),

@@ -1,5 +1,4 @@
 import { Form, redirect, useNavigation } from "react-router";
-import { twMerge } from "tailwind-merge";
 import { ENV } from "~/lib/.server/ENV";
 import { generateId } from "~/lib/.server/generateId";
 import { getAsstResponseData } from "~/lib/.server/openai/getAsstResponseData";
@@ -8,18 +7,14 @@ import { requireThread } from "~/lib/.server/openai/requireThread";
 import { redisCache } from "~/lib/.server/redis/redis";
 import type { AssistantPayload } from "~/types/assistant";
 import type { Route } from "./+types/_index";
+
+const title = "Structured Output Demo";
+
 export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Trivia Game Demo" },
-    // { name: "description", content: "Welcome to React Router!" },
-  ];
+  return [{ title }];
 }
 
-// export function loader({ context }: Route.LoaderArgs) {
-//   return {};
-// }
-
-export async function action({ request }: Route.ActionArgs) {
+export async function action() {
   const thread = await requireThread({ prompt: NEW_GAME_PROMPT });
   const asstResponse = await getAsstResponseData({
     asstId: ENV.OPENAI_ASST_ID_CREATE_GAME,
@@ -27,7 +22,6 @@ export async function action({ request }: Route.ActionArgs) {
   });
   const id = generateId();
 
-  // TODO: store threadId and response
   await redisCache.set<string>(
     id,
     JSON.stringify({
@@ -35,28 +29,33 @@ export async function action({ request }: Route.ActionArgs) {
       threadId: thread.id,
     } satisfies AssistantPayload),
     {
-      // ex: 60 * 60, // TODO: add expiration
+      ex: 60 * 60 * 24, // Expires in 24h
     }
   );
 
   return redirect(`/games/${id}`);
 }
 
-export default function Home({ loaderData }: Route.ComponentProps) {
+export default function Home() {
   const navigation = useNavigation();
   const isNavigating = Boolean(navigation.location);
   return (
-    <div>
-      <h1>Trivia Game Demo</h1>
+    <div className="text-center">
+      <h1>{title}</h1>
       <Form method="post">
         <button
           type="submit"
           disabled={isNavigating}
-          className={twMerge("btn disabled:btn-disabled")}
+          className={"btn disabled:btn-disabled"}
         >
           {isNavigating ? "Creating game..." : "New Trivia Game"}
         </button>
       </Form>
+      {isNavigating && (
+        <div className="mt-4 text-sm text-secondary">
+          This might take a moment...
+        </div>
+      )}
     </div>
   );
 }
