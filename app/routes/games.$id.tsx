@@ -10,22 +10,21 @@ import { redisCache } from "~/lib/.server/redis/redis";
 import type { AssistantPayload } from "~/types/assistant";
 import type { Route } from "./+types/games.$id";
 
-const NO_GAME_FOUND_ERROR = "Sorry, no game found.";
 type GameView = "question" | "answer" | "end";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: "Trivia Game Demo" }];
+  return [{ title: "Structured Output Demo" }];
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
   if (!params.id) {
-    throw redirect(`/?error=${encodeURIComponent(NO_GAME_FOUND_ERROR)}`);
+    throw redirect(`/?error=true`);
   }
 
   const payload = await redisCache.get<AssistantPayload | null>(params.id);
 
   if (!payload) {
-    throw redirect(`/?error=${encodeURIComponent(NO_GAME_FOUND_ERROR)}`);
+    throw redirect(`/?error=true`);
   }
   return {
     id: params?.id,
@@ -37,7 +36,6 @@ export async function action({ params }: Route.ActionArgs) {
   let threadId: string = "";
 
   const currentGame = await redisCache.get<AssistantPayload | null>(params.id);
-  console.log("currentGame: ", currentGame);
 
   if (currentGame && currentGame?.threadId) {
     threadId = currentGame?.threadId;
@@ -47,7 +45,6 @@ export async function action({ params }: Route.ActionArgs) {
     });
     threadId = thread.id;
   }
-  console.log("threadId: ", threadId);
 
   const asstResponse = await getAsstResponseData({
     asstId: ENV.OPENAI_ASST_ID_CREATE_GAME,
@@ -60,7 +57,10 @@ export async function action({ params }: Route.ActionArgs) {
     JSON.stringify({
       game: asstResponse,
       threadId,
-    } satisfies AssistantPayload)
+    } satisfies AssistantPayload),
+    {
+      ex: 60 * 60 * 24, // Expires in 24h
+    }
   );
 
   return redirect(`/games/${id}`);
@@ -96,7 +96,7 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
     }
   }
 
-  function playAgain() {
+  function resetGame() {
     setCorrectAnswers(0);
     setSelectedChoice("");
     setQuestionIndex(0);
@@ -104,7 +104,7 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
   }
 
   useEffect(() => {
-    playAgain();
+    resetGame();
   }, [location.pathname]);
 
   const gameViews: Record<GameView, JSX.Element> = {
@@ -179,7 +179,7 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
         <h2>Results</h2>
         <p>Correct answers: {correctAnswers}</p>
         <p>
-          <button onClick={playAgain} className="btn">
+          <button onClick={resetGame} className="btn">
             Play Again
           </button>
         </p>

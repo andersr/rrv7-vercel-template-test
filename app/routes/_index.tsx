@@ -14,6 +14,19 @@ export function meta({}: Route.MetaArgs) {
   return [{ title }];
 }
 
+export async function loader({ request }: Route.LoaderArgs) {
+  let errorMessage = "";
+  const url = new URL(request.url);
+  const error = url.searchParams.get("error");
+  if (error) {
+    errorMessage = "Sorry, something went wrong. Please try again.";
+  }
+
+  return {
+    errorMessage,
+  };
+}
+
 export async function action() {
   const thread = await requireThread({ prompt: NEW_GAME_PROMPT });
   const asstResponse = await getAsstResponseData({
@@ -36,11 +49,14 @@ export async function action() {
   return redirect(`/games/${id}`);
 }
 
-export default function Home() {
+export default function Home({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isNavigating = Boolean(navigation.location);
   return (
     <div className="text-center">
+      {loaderData.errorMessage && (
+        <div className="py-4 text-red-500">{loaderData.errorMessage}</div>
+      )}
       <h1>{title}</h1>
       <Form method="post">
         <button
