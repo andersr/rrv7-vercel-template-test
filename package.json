@@ -1,6 +1,5 @@
 {
-  "name": "vercel-template-test",
-  "private": true,
+  "name": "structured-response-demo",
   "type": "module",
   "scripts": {
     "build": "react-router build && node vercel/prepare.js",
