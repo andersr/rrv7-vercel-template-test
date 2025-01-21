@@ -1,5 +1,5 @@
 import { useEffect, useState, type JSX } from "react";
-import { redirect, useLocation, useNavigation } from "react-router";
+import { redirect, useLocation } from "react-router";
 import { twMerge } from "tailwind-merge";
 import { ENV } from "~/lib/.server/ENV";
 import { generateId } from "~/lib/.server/generateId";
@@ -68,9 +68,7 @@ export async function action({ params }: Route.ActionArgs) {
 }
 
 export default function GameDetails({ loaderData }: Route.ComponentProps) {
-  const navigation = useNavigation();
   const location = useLocation();
-  const isNavigating = Boolean(navigation.location);
   const [currentView, setCurrentView] = useState<GameView>("question");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState("");

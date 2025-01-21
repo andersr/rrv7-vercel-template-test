@@ -1,4 +1,4 @@
-import { redirect, useNavigation } from "react-router";
+import { redirect } from "react-router";
 import { ENV } from "~/lib/.server/ENV";
 import { generateId } from "~/lib/.server/generateId";
 import { getAsstOutput } from "~/lib/.server/openai/getAssistantOutput";
@@ -51,8 +51,6 @@ export async function action() {
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
-  const navigation = useNavigation();
-  const isNavigating = Boolean(navigation.location);
   return (
     <div className="text-center">
       {loaderData.errorMessage && (
