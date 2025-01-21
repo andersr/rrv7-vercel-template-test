@@ -1,3 +1,3 @@
 # Structured Response Demo
 
-This is a simple demo, in the form of a trivia game, of using a structured response from an OpenAI Assistant to create an app feature.
+This is a demo app for the blog post [Creating App Features Using AI Assistant Structured Output](https://www.anders.co/blog/creating-app-features-using-ai-assistant-structured-output/).
