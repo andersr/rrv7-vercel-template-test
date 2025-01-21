@@ -1,13 +1,14 @@
 import { useEffect, useState, type JSX } from "react";
-import { Form, redirect, useLocation, useNavigation } from "react-router";
+import { redirect, useLocation, useNavigation } from "react-router";
 import { twMerge } from "tailwind-merge";
 import { ENV } from "~/lib/.server/ENV";
 import { generateId } from "~/lib/.server/generateId";
-import { getAsstResponseData } from "~/lib/.server/openai/getAsstResponseData";
+import { getAsstOutput } from "~/lib/.server/openai/getAssistantOutput";
 import { NEW_GAME_PROMPT } from "~/lib/.server/openai/prompts";
 import { requireThread } from "~/lib/.server/openai/requireThread";
 import { redisCache } from "~/lib/.server/redis/redis";
 import type { AssistantPayload } from "~/types/assistant";
+import NewGameForm from "~/ui/NewGameForm";
 import type { Route } from "./+types/games.$id";
 
 type GameView = "question" | "answer" | "end";
@@ -46,7 +47,7 @@ export async function action({ params }: Route.ActionArgs) {
     threadId = thread.id;
   }
 
-  const asstResponse = await getAsstResponseData({
+  const output = await getAsstOutput({
     asstId: ENV.OPENAI_ASST_ID_CREATE_GAME,
     threadId,
   });
@@ -55,7 +56,7 @@ export async function action({ params }: Route.ActionArgs) {
   await redisCache.set<string>(
     id,
     JSON.stringify({
-      game: asstResponse,
+      game: output,
       threadId,
     } satisfies AssistantPayload),
     {
@@ -184,20 +185,7 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
           </button>
         </p>
         <div>
-          <Form method="post">
-            <button
-              type="submit"
-              disabled={isNavigating}
-              className={twMerge("btn disabled:btn-disabled")}
-            >
-              {isNavigating ? "Creating game..." : "New Trivia Game"}
-            </button>
-          </Form>
-          {isNavigating && (
-            <div className="mt-4 text-sm text-secondary">
-              This might take a moment...
-            </div>
-          )}
+          <NewGameForm />
         </div>
       </div>
     ),
