@@ -1,14 +1,5 @@
+import type { AsstDataRequestInput } from "~/types/assistant";
 import { openai } from "./openai";
-
-export interface CreateAssistantInput {
-  instructions: string;
-  name: string;
-}
-
-export interface AsstDataRequestInput {
-  threadId: string;
-  asstId: string;
-}
 
 export async function getAsstOutputStream({
   threadId,
