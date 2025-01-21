@@ -1,7 +1,7 @@
 import type { AsstDataRequestInput } from "~/types/assistant";
 import { openai } from "./openai";
 
-export async function getAsstOutputStream({
+export async function getAsstOutput({
   threadId,
   asstId,
 }: AsstDataRequestInput) {
@@ -30,7 +30,7 @@ export async function getAsstOutputStream({
 
     const output = response.join("");
 
-    return output;
+    return JSON.parse(output);
   } catch (error) {
     console.error("ERROR: ", error);
     return "";
