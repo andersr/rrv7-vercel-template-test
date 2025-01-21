@@ -2,7 +2,9 @@
 
 This is a demo app for the blog post [Creating App Features Using AI Assistant Structured Output](https://www.anders.co/blog/creating-app-features-using-ai-assistant-structured-output/).
 
-## Running the app
+[View deployed app](https://andersco-structured-output-demo.vercel.app/)
+
+## Running the app locally
 
 1. Clone this repo, run `npm install`
 1. Go to [OpenAI](https://openai.com/), create an Assistant (see below).
