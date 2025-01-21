@@ -1,5 +1,14 @@
 {
   "name": "structured-response-demo",
+  "author": {
+    "name": "Anders Ramsay",
+    "url": "https://www.anders.co/"
+  },
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andersr/structured-response-demo"
+  },
   "type": "module",
   "scripts": {
     "build": "react-router build && node vercel/prepare.js",
