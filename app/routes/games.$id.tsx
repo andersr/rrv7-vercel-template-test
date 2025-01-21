@@ -9,6 +9,7 @@ import { requireThread } from "~/lib/.server/openai/requireThread";
 import { redisCache } from "~/lib/.server/redis/redis";
 import type { AssistantPayload } from "~/types/assistant";
 import NewGameForm from "~/ui/NewGameForm";
+import QuestionHeader from "~/ui/QuestionHeader";
 import type { Route } from "./+types/games.$id";
 
 type GameView = "question" | "answer" | "end";
@@ -109,12 +110,11 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
   const gameViews: Record<GameView, JSX.Element> = {
     question: (
       <div>
-        <div>
-          <h2>{currentQuestion?.question}</h2>
-          <p className="text-sm">
-            Question {questionIndex + 1} of {game?.questions.length}
-          </p>
-        </div>
+        <QuestionHeader
+          question={currentQuestion?.question}
+          questionIndex={questionIndex}
+          totalQuestions={game?.questions.length}
+        />
         <ul className=" list-none pl-0">
           {currentQuestion?.choices.map((c) => (
             <li key={c}>
@@ -148,12 +148,11 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
     ),
     answer: (
       <div>
-        <div>
-          <h2>{currentQuestion?.question}</h2>
-          <p className="text-sm">
-            Question {questionIndex + 1} of {game?.questions.length}
-          </p>
-        </div>
+        <QuestionHeader
+          question={currentQuestion?.question}
+          questionIndex={questionIndex}
+          totalQuestions={game?.questions.length}
+        />
         <p>Your answer: {selectedChoice}</p>
         <p>
           {currentQuestion?.correctAnswer === selectedChoice ? (
