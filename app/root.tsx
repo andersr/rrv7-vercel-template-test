@@ -48,7 +48,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 Code Repo
               </a>{" "}
               |{" "}
-              <a href="https://github.com/andersr/structured-response-demo">
+              <a href="https://www.anders.co/blog/creating-app-features-using-ai-assistant-structured-output/">
                 Blog Post
               </a>
             </p>
