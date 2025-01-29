@@ -8,7 +8,7 @@ This is a demo app for the blog post [Creating App Features Using AI Assistant S
 
 1. Clone this repo, run `npm install`
 1. Go to [OpenAI](https://openai.com/), create an Assistant (see below).
-1. Go to [Upstash](https://upstash.com/), and creat a Redis database.
+1. Go to [Upstash](https://upstash.com/), and create a Redis database.
 1. Make a copy of the `.env.example` file and rename it to `.env`
 1. Add the api keys, assistant Ids, etc listed in the `.env` file.
 1. Run `npm run dev` to run the app locally
