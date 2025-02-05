@@ -4,8 +4,9 @@ import { generateId } from "~/lib/.server/generateId";
 import { getAsstOutput } from "~/lib/.server/openai/getAssistantOutput";
 import { NEW_GAME_PROMPT } from "~/lib/.server/openai/prompts";
 import { requireThread } from "~/lib/.server/openai/requireThread";
-import { redisCache } from "~/lib/.server/redis/redis";
-import type { AssistantPayload } from "~/types/assistant";
+import { redisStore } from "~/lib/.server/redis/redis";
+import type { AssistantId } from "~/lib/assistantIds";
+import type { AssistantPayload, AsstIdStore } from "~/types/assistant";
 import NewGameForm from "~/ui/NewGameForm";
 import type { Route } from "./+types/_index";
 
@@ -30,13 +31,22 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export async function action() {
   const thread = await requireThread({ prompt: NEW_GAME_PROMPT });
+  const env = process.env.NODE_ENV;
+  const asstName = "createTriviaGame" satisfies AssistantId;
+
+  const asstIds = await redisStore.get<AsstIdStore>(asstName);
+
+  if (!asstIds) {
+    throw new Error("No assistant ids found.");
+  }
+
   const output = await getAsstOutput({
     asstId: ENV.OPENAI_ASST_ID_CREATE_GAME,
     threadId: thread.id,
   });
   const id = generateId();
 
-  await redisCache.set<string>(
+  await redisStore.set<string>(
     id,
     JSON.stringify({
       game: output,

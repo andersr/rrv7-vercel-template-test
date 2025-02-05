@@ -1,13 +1,14 @@
 import { useEffect, useState, type JSX } from "react";
 import { redirect, useLocation } from "react-router";
 import { twMerge } from "tailwind-merge";
-import { ENV } from "~/lib/.server/ENV";
 import { generateId } from "~/lib/.server/generateId";
 import { getAsstOutput } from "~/lib/.server/openai/getAssistantOutput";
 import { NEW_GAME_PROMPT } from "~/lib/.server/openai/prompts";
 import { requireThread } from "~/lib/.server/openai/requireThread";
-import { redisCache } from "~/lib/.server/redis/redis";
-import type { AssistantPayload } from "~/types/assistant";
+import { redisStore } from "~/lib/.server/redis/redis";
+import type { AssistantId } from "~/lib/assistantIds";
+import type { AssistantPayload, AsstIdStore } from "~/types/assistant";
+import type { NodeEnv } from "~/types/env";
 import NewGameForm from "~/ui/NewGameForm";
 import QuestionHeader from "~/ui/QuestionHeader";
 import type { Route } from "./+types/games.$id";
@@ -23,7 +24,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw redirect(`/?error=true`);
   }
 
-  const payload = await redisCache.get<AssistantPayload | null>(params.id);
+  const payload = await redisStore.get<AssistantPayload | null>(params.id);
 
   if (!payload) {
     throw redirect(`/?error=true`);
@@ -37,7 +38,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 export async function action({ params }: Route.ActionArgs) {
   let threadId: string = "";
 
-  const currentGame = await redisCache.get<AssistantPayload | null>(params.id);
+  const currentGame = await redisStore.get<AssistantPayload | null>(params.id);
 
   if (currentGame && currentGame?.threadId) {
     threadId = currentGame?.threadId;
@@ -48,13 +49,26 @@ export async function action({ params }: Route.ActionArgs) {
     threadId = thread.id;
   }
 
+  const env = process.env.NODE_ENV as NodeEnv; // TODO: parse the envs with Zod instead
+  if (env !== "development" && env !== "production") {
+    throw new Error("invalid env values");
+  }
+
+  const asstName = "createTriviaGame" satisfies AssistantId;
+
+  const asstIds = await redisStore.get<AsstIdStore>(asstName);
+
+  if (!asstIds) {
+    throw new Error("no asst ids found, cannot generate.");
+  }
+
   const output = await getAsstOutput({
-    asstId: ENV.OPENAI_ASST_ID_CREATE_GAME,
+    asstId: asstIds[env],
     threadId,
   });
   const id = generateId();
 
-  await redisCache.set<string>(
+  await redisStore.set<string>(
     id,
     JSON.stringify({
       game: output,
