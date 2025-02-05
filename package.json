@@ -16,7 +16,8 @@
     "typecheck": "react-router typegen && tsc",
     "asst:admin": "dotenv -- tsx app/admin/assistants.server.ts",
     "asst:create": "ACTION=create npm run asst:admin",
-    "asst:update": "ACTION=update npm run asst:admin"
+    "asst:update": "ACTION=update npm run asst:admin",
+    "asst:deploy": "NODE_ENV=production ACTION=update npm run asst:admin"
   },
   "dependencies": {
     "@react-router/express": "^7.1.3",
