@@ -18,9 +18,6 @@ export default defineConfig(({ isSsrBuild, command }) => ({
     },
   },
   ssr: {
-    optimizeDeps: {
-      include: ["triviadb"],
-    },
     noExternal: command === "build" ? true : undefined,
   },
   plugins: [reactRouter(), tsconfigPaths()],
