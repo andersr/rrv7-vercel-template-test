@@ -121,6 +121,7 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
     resetGame();
   }, [location.pathname]);
 
+  // TODO: use schema-based types for these components
   const gameViews: Record<GameView, JSX.Element> = {
     question: (
       <div>

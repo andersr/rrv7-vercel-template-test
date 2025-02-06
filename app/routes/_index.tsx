@@ -1,5 +1,4 @@
 import { redirect } from "react-router";
-import { ENV } from "~/lib/.server/ENV";
 import { generateId } from "~/lib/.server/generateId";
 import { getAsstOutput } from "~/lib/.server/openai/getAssistantOutput";
 import { NEW_GAME_PROMPT } from "~/lib/.server/openai/prompts";
@@ -7,6 +6,7 @@ import { requireThread } from "~/lib/.server/openai/requireThread";
 import { redisStore } from "~/lib/.server/redis/redis";
 import type { AssistantId } from "~/lib/assistantIds";
 import type { AssistantPayload, AsstIdStore } from "~/types/assistant";
+import type { NodeEnv } from "~/types/env";
 import NewGameForm from "~/ui/NewGameForm";
 import type { Route } from "./+types/_index";
 
@@ -31,7 +31,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export async function action() {
   const thread = await requireThread({ prompt: NEW_GAME_PROMPT });
-  const env = process.env.NODE_ENV;
+
+  // TODO: turn into requireEnv
+  const env = process.env.NODE_ENV as NodeEnv;
+  if (!env) {
+    throw new Error("no node env found");
+  }
   const asstName = "createTriviaGame" satisfies AssistantId;
 
   const asstIds = await redisStore.get<AsstIdStore>(asstName);
@@ -41,7 +46,7 @@ export async function action() {
   }
 
   const output = await getAsstOutput({
-    asstId: ENV.OPENAI_ASST_ID_CREATE_GAME,
+    asstId: asstIds[env],
     threadId: thread.id,
   });
   const id = generateId();
