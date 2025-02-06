@@ -3,7 +3,6 @@ import { openai } from "~/lib/.server/openai/openai";
 import { assistantConfigs } from "~/lib/assistantConfigs";
 import { ASSISTANT_IDS, type AssistantId } from "~/lib/assistantIds";
 import type { AsstConfig, AsstIdStore } from "~/types/assistant";
-
 import type { NodeEnv } from "~/types/env";
 import { redisStore } from "../lib/.server/redis/redis";
 
@@ -16,32 +15,47 @@ interface ActionHandlerInput {
   env?: NodeEnv;
 }
 
-type createAsstFn = (input: ActionHandlerInput) => Promise<AsstIdStore>;
-type updateAsstFn = (input: ActionHandlerInput) => Promise<void>;
+type asstHandlerFn = (input: ActionHandlerInput) => Promise<void>;
 
-const create: createAsstFn = async ({ asstName, config }) => {
+// TODO: update this to first retrieve existing assistants and throw an error if an assistant by the same name already exists
+/**
+ * Creates new assistants in OpenAI, one for dev, one for prod, and returns the OpenAI ids for each assistant. Run at project start, or whenever a new assistant is added.
+ */
+const create: asstHandlerFn = async ({ asstName, config }) => {
   try {
+    const devName = `${asstName}_dev`;
     const dev = await openai.beta.assistants.create({
       ...config,
-      name: `${asstName}_dev`,
+      name: devName,
     });
+    console.info(
+      `Dev asst created in OpenAI: name: ${devName} , id: ${dev.id}`
+    );
 
+    const prodName = `${asstName}_prod`;
     const prod = await openai.beta.assistants.create({
       ...config,
-      name: `${asstName}_prod`,
+      name: prodName,
     });
+    console.info(
+      `Prod asst created in OpenAI: name: ${prodName} , id: ${prod.id}`
+    );
 
-    return {
+    await redisStore.set<AsstIdStore>(asstName, {
       development: dev.id,
       production: prod.id,
-    };
+    });
+    console.info(`Asst ids added to store using key: ${asstName}`);
   } catch (error) {
     console.error("error: ", error);
     throw new Error("something went wrong creating assistants.");
   }
 };
 
-const update: updateAsstFn = async ({ idStore, asstName, config, env }) => {
+/**
+ * Update the dev assistant only or both dev and prod.  See commands in package.json.
+ */
+const update: asstHandlerFn = async ({ idStore, asstName, config, env }) => {
   try {
     if (!idStore?.development) {
       throw new Error("no dev asst id");
@@ -71,14 +85,13 @@ const update: updateAsstFn = async ({ idStore, asstName, config, env }) => {
   }
 };
 
-const handlers: Record<AsstAction, createAsstFn | updateAsstFn> = {
+const handlers: Record<AsstAction, asstHandlerFn> = {
   create,
   update,
 };
 
 /**
- * Creates prod and dev versions of an assistant.
- * @returns the assistant ids in the console, to be added as environment variables in the respective environments.
+ * The main admin function.  Run using scripts in package.json
  */
 (async function asstAdmin() {
   try {
@@ -91,7 +104,7 @@ const handlers: Record<AsstAction, createAsstFn | updateAsstFn> = {
 
     const handler = handlers[action];
     if (!handler) {
-      throw new Error(`no matching handler found for action: ${action} `);
+      throw new Error(`no matching handler found for action: ${action}`);
     }
 
     for (let index = 0; index < ASSISTANT_IDS.length; index++) {
