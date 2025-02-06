@@ -68,12 +68,12 @@ export async function action({ params }: Route.ActionArgs) {
   });
   const id = generateId();
 
-  await redisStore.set<string>(
+  await redisStore.set<AssistantPayload>(
     id,
-    JSON.stringify({
+    {
       game: output,
       threadId,
-    } satisfies AssistantPayload),
+    },
     {
       ex: 60 * 60 * 24, // Expires in 24h
     }
