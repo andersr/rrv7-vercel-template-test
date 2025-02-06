@@ -100,6 +100,7 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
     }
     setCurrentView("answer");
   }
+
   function handleNext() {
     if (questionIndex === game?.questions.length - 1) {
       setCurrentView("end");
@@ -121,7 +122,6 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
     resetGame();
   }, [location.pathname]);
 
-  // TODO: use schema-based types for these components
   const gameViews: Record<GameView, JSX.Element> = {
     question: (
       <div>

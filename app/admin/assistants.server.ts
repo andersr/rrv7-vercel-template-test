@@ -91,7 +91,7 @@ const handlers: Record<AsstAction, asstHandlerFn> = {
 };
 
 /**
- * The main admin function.  Run using scripts in package.json
+ * The main admin function. Run using scripts in package.json
  */
 (async function asstAdmin() {
   try {

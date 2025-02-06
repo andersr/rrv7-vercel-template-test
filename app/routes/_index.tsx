@@ -45,18 +45,18 @@ export async function action() {
     throw new Error("No assistant ids found.");
   }
 
-  const output = await getAsstOutput({
+  const game = await getAsstOutput({
     asstId: asstIds[env],
     threadId: thread.id,
   });
   const id = generateId();
 
-  await redisStore.set<string>(
+  await redisStore.set<AssistantPayload>(
     id,
-    JSON.stringify({
-      game: output,
+    {
+      game,
       threadId: thread.id,
-    } satisfies AssistantPayload),
+    },
     {
       ex: 60 * 60 * 24, // Expires in 24h
     }
