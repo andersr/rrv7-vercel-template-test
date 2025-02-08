@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const triviaQuestionSchema = z.object({
-  category: z.string().describe("The question category, eg Music"),
+  category: z.string().describe("The question category."),
   question: z.string().describe("The trivia question."),
   choices: z
     .string()
@@ -16,7 +16,7 @@ export const triviaGameSchema = z.object({
   questions: triviaQuestionSchema
     .array()
     .describe(
-      "A collection of trivia questions. Each question should be unique within the collection. Question categories should be a varied mix."
+      "An array of trivia questions. Each question should be unique within the array. Question categories should be a mix of common trivia categories."
     ),
 });
 
