@@ -1,10 +1,10 @@
-import { zodResponseFormat } from "openai/helpers/zod";
 import { openai } from "~/lib/.server/openai/openai";
 import { assistantConfigs } from "~/lib/assistantConfigs";
 import { ASSISTANT_IDS, type AssistantId } from "~/lib/assistantIds";
 import type { AsstConfig, AsstIdStore } from "~/types/assistant";
 import type { NodeEnv } from "~/types/env";
 import { redisStore } from "../lib/.server/redis/redis";
+import { updateAssistant } from "./helpers/updateAssistant.server";
 
 type AsstAction = "create" | "update";
 
@@ -53,31 +53,31 @@ const create: asstHandlerFn = async ({ asstName, config }) => {
 };
 
 /**
- * Update the dev assistant only or both dev and prod.  See commands in package.json.
+ * Update the dev assistant only or both dev and prod. See commands in package.json.
  */
 const update: asstHandlerFn = async ({ idStore, asstName, config, env }) => {
   try {
     if (!idStore?.development) {
       throw new Error("no dev asst id");
     }
-    await openai.beta.assistants.update(idStore?.development, {
-      instructions: config.instructions,
-      description: config.description,
-      response_format: zodResponseFormat(config.schema, `${asstName}_schema`),
+
+    await updateAssistant({
+      id: idStore.development,
+      config,
+      name: asstName,
+      env: "development",
     });
-    console.info("dev asst updated");
 
     if (env === "production") {
       if (!idStore?.production) {
         throw new Error("no prod asst id");
       }
-      await openai.beta.assistants.update(idStore?.production, {
-        instructions: config.instructions,
-        description: config.description,
-        response_format: zodResponseFormat(config.schema, `${asstName}_schema`),
+      await updateAssistant({
+        id: idStore.production,
+        config,
+        name: asstName,
+        env: "production",
       });
-
-      console.info("prod asst updated");
     }
   } catch (error) {
     console.error("error: ", error);
