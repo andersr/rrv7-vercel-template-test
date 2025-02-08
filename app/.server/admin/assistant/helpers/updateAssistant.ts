@@ -1,5 +1,5 @@
 import { zodResponseFormat } from "openai/helpers/zod";
-import { openai } from "~/lib/.server/openai/openai";
+import { openai } from "~/.server/openai/openai";
 import type { AssistantName } from "~/lib/assistantNames";
 import type { AsstConfig } from "~/types/assistant";
 import type { NodeEnv } from "~/types/env";

@@ -14,7 +14,7 @@
     "build": "react-router build && node vercel/prepare.js",
     "dev": "cross-env NODE_ENV=development node ./dev-server.js",
     "typecheck": "react-router typegen && tsc",
-    "asst:admin": "dotenv -- tsx app/admin/assistants.server.ts",
+    "asst:admin": "dotenv -- tsx app/.server/admin/assistant/main.ts",
     "asst:create": "ACTION=create npm run asst:admin",
     "asst:update": "ACTION=update npm run asst:admin",
     "asst:deploy": "NODE_ENV=production ACTION=update npm run asst:admin"

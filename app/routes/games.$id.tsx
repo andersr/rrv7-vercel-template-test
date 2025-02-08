@@ -1,11 +1,11 @@
 import { useEffect, useState, type JSX } from "react";
 import { redirect, useLocation } from "react-router";
 import { twMerge } from "tailwind-merge";
-import { generateId } from "~/lib/.server/generateId";
-import { getAsstOutput } from "~/lib/.server/openai/getAssistantOutput";
-import { NEW_GAME_PROMPT } from "~/lib/.server/openai/prompts";
-import { requireThread } from "~/lib/.server/openai/requireThread";
-import { redisStore } from "~/lib/.server/redis/redis";
+import { getAsstOutput } from "~/.server/openai/getAssistantOutput";
+import { NEW_GAME_PROMPT } from "~/.server/openai/prompts";
+import { requireThread } from "~/.server/openai/requireThread";
+import { redisStore } from "~/.server/redis/redis";
+import { generateId } from "~/.server/utils/generateId";
 import type { AssistantName } from "~/lib/assistantNames";
 import type { AssistantPayload, AsstIdStore } from "~/types/assistant";
 import type { NodeEnv } from "~/types/env";

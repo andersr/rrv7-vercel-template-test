@@ -1,9 +1,9 @@
 import { redirect } from "react-router";
-import { generateId } from "~/lib/.server/generateId";
-import { getAsstOutput } from "~/lib/.server/openai/getAssistantOutput";
-import { NEW_GAME_PROMPT } from "~/lib/.server/openai/prompts";
-import { requireThread } from "~/lib/.server/openai/requireThread";
-import { redisStore } from "~/lib/.server/redis/redis";
+import { getAsstOutput } from "~/.server/openai/getAssistantOutput";
+import { NEW_GAME_PROMPT } from "~/.server/openai/prompts";
+import { requireThread } from "~/.server/openai/requireThread";
+import { redisStore } from "~/.server/redis/redis";
+import { generateId } from "~/.server/utils/generateId";
 import type { AssistantName } from "~/lib/assistantNames";
 import { triviaGameSchema } from "~/lib/gameSchema";
 import type { AssistantPayload, AsstIdStore } from "~/types/assistant";

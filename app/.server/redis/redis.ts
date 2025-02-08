@@ -1,5 +1,5 @@
 import { Redis } from "@upstash/redis";
-import { ENV } from "~/lib/.server/ENV";
+import { ENV } from "../ENV";
 
 export const redisStore = new Redis({
   token: ENV.UPSTASH_REDIS_TOKEN,

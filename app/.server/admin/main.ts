@@ -1,10 +1,10 @@
+import { redisStore } from "~/.server/redis/redis";
 import { assistantConfigs } from "~/lib/assistantConfigs";
 import { ASSISTANT_NAMES, type AssistantName } from "~/lib/assistantNames";
 import type { AsstConfig, AsstIdStore } from "~/types/assistant";
 import type { NodeEnv } from "~/types/env";
-import { redisStore } from "../lib/.server/redis/redis";
-import { createAssistant } from "./helpers/createAssistant.server";
-import { updateAssistant } from "./helpers/updateAssistant.server";
+import { createAssistant } from "./assistant/helpers/createAssistant";
+import { updateAssistant } from "./assistant/helpers/updateAssistant";
 
 type AsstAction = "create" | "update";
 
