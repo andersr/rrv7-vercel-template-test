@@ -6,7 +6,7 @@ import { getAsstOutput } from "~/lib/.server/openai/getAssistantOutput";
 import { NEW_GAME_PROMPT } from "~/lib/.server/openai/prompts";
 import { requireThread } from "~/lib/.server/openai/requireThread";
 import { redisStore } from "~/lib/.server/redis/redis";
-import type { AssistantId } from "~/lib/assistantIds";
+import type { AssistantName } from "~/lib/assistantNames";
 import type { AssistantPayload, AsstIdStore } from "~/types/assistant";
 import type { NodeEnv } from "~/types/env";
 import NewGameForm from "~/ui/NewGameForm";
@@ -54,7 +54,7 @@ export async function action({ params }: Route.ActionArgs) {
     throw new Error("invalid env values");
   }
 
-  const asstName = "createTriviaGame" satisfies AssistantId;
+  const asstName = "createTriviaGame" satisfies AssistantName;
 
   const asstIds = await redisStore.get<AsstIdStore>(asstName);
 

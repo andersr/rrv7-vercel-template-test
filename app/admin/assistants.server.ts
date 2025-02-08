@@ -1,6 +1,6 @@
 import { openai } from "~/lib/.server/openai/openai";
 import { assistantConfigs } from "~/lib/assistantConfigs";
-import { ASSISTANT_IDS, type AssistantId } from "~/lib/assistantIds";
+import { ASSISTANT_NAMES, type AssistantName } from "~/lib/assistantNames";
 import type { AsstConfig, AsstIdStore } from "~/types/assistant";
 import type { NodeEnv } from "~/types/env";
 import { redisStore } from "../lib/.server/redis/redis";
@@ -10,7 +10,7 @@ type AsstAction = "create" | "update";
 
 interface ActionHandlerInput {
   idStore: AsstIdStore | null;
-  asstName: AssistantId;
+  asstName: AssistantName;
   config: AsstConfig;
   env?: NodeEnv;
 }
@@ -107,8 +107,8 @@ const handlers: Record<AsstAction, asstHandlerFn> = {
       throw new Error(`no matching handler found for action: ${action}`);
     }
 
-    for (let index = 0; index < ASSISTANT_IDS.length; index++) {
-      const asstName = ASSISTANT_IDS[index];
+    for (let index = 0; index < ASSISTANT_NAMES.length; index++) {
+      const asstName = ASSISTANT_NAMES[index];
       const config = assistantConfigs[asstName];
 
       if (!config) {

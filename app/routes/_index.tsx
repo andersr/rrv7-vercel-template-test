@@ -4,7 +4,7 @@ import { getAsstOutput } from "~/lib/.server/openai/getAssistantOutput";
 import { NEW_GAME_PROMPT } from "~/lib/.server/openai/prompts";
 import { requireThread } from "~/lib/.server/openai/requireThread";
 import { redisStore } from "~/lib/.server/redis/redis";
-import type { AssistantId } from "~/lib/assistantIds";
+import type { AssistantName } from "~/lib/assistantNames";
 import { triviaGameSchema } from "~/lib/gameSchema";
 import type { AssistantPayload, AsstIdStore } from "~/types/assistant";
 import type { NodeEnv } from "~/types/env";
@@ -39,7 +39,7 @@ export async function action() {
     if (!env) {
       throw new Error("no node env found");
     }
-    const asstName = "createTriviaGame" satisfies AssistantId;
+    const asstName = "createTriviaGame" satisfies AssistantName;
 
     const asstIds = await redisStore.get<AsstIdStore>(asstName);
 

@@ -1,6 +1,6 @@
 import { zodResponseFormat } from "openai/helpers/zod";
 import { openai } from "~/lib/.server/openai/openai";
-import type { AssistantId } from "~/lib/assistantIds";
+import type { AssistantName } from "~/lib/assistantNames";
 import type { AsstConfig } from "~/types/assistant";
 import type { NodeEnv } from "~/types/env";
 
@@ -12,7 +12,7 @@ export async function updateAssistant({
 }: {
   id: string;
   config: AsstConfig;
-  name: AssistantId;
+  name: AssistantName;
   env: NodeEnv;
 }) {
   await openai.beta.assistants.update(id, {
