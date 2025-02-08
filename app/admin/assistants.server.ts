@@ -17,9 +17,8 @@ interface ActionHandlerInput {
 
 type asstHandlerFn = (input: ActionHandlerInput) => Promise<void>;
 
-// TODO: update this to first retrieve existing assistants and throw an error if an assistant by the same name already exists
 /**
- * Creates new assistants in OpenAI, one for dev, one for prod, and returns the OpenAI ids for each assistant. Run at project start, or whenever a new assistant is added.
+ * Creates new assistants in OpenAI, one for dev, one for prod, and returns the OpenAI ids for each assistant. Run whenever a new assistant is added.
  */
 const create: asstHandlerFn = async ({ asstName, config }) => {
   try {
@@ -84,7 +83,7 @@ const handlers: Record<AsstAction, asstHandlerFn> = {
 };
 
 /**
- * The main admin function. Run using scripts in package.json
+ * The main admin function. Run using the "asst:*" scripts in package.json
  */
 (async function asstAdmin() {
   try {
