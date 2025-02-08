@@ -1,9 +1,9 @@
-import { openai } from "~/lib/.server/openai/openai";
 import { assistantConfigs } from "~/lib/assistantConfigs";
 import { ASSISTANT_NAMES, type AssistantName } from "~/lib/assistantNames";
 import type { AsstConfig, AsstIdStore } from "~/types/assistant";
 import type { NodeEnv } from "~/types/env";
 import { redisStore } from "../lib/.server/redis/redis";
+import { createAssistant } from "./helpers/createAssistant.server";
 import { updateAssistant } from "./helpers/updateAssistant.server";
 
 type AsstAction = "create" | "update";
@@ -23,29 +23,22 @@ type asstHandlerFn = (input: ActionHandlerInput) => Promise<void>;
  */
 const create: asstHandlerFn = async ({ asstName, config }) => {
   try {
-    const devName = `${asstName}_dev`;
-    const dev = await openai.beta.assistants.create({
-      ...config,
-      name: devName,
+    const dev = await createAssistant({
+      config,
+      env: "development",
+      name: asstName,
     });
-    console.info(
-      `Dev asst created in OpenAI: name: ${devName} , id: ${dev.id}`
-    );
-
-    const prodName = `${asstName}_prod`;
-    const prod = await openai.beta.assistants.create({
-      ...config,
-      name: prodName,
+    const prod = await createAssistant({
+      config,
+      env: "production",
+      name: asstName,
     });
-    console.info(
-      `Prod asst created in OpenAI: name: ${prodName} , id: ${prod.id}`
-    );
 
     await redisStore.set<AsstIdStore>(asstName, {
       development: dev.id,
       production: prod.id,
     });
-    console.info(`Asst ids added to store using key: ${asstName}`);
+    console.info(`Asst ids added to store for assistant ${asstName}`);
   } catch (error) {
     console.error("error: ", error);
     throw new Error("something went wrong creating assistants.");
