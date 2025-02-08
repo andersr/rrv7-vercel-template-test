@@ -5,6 +5,7 @@ import { NEW_GAME_PROMPT } from "~/lib/.server/openai/prompts";
 import { requireThread } from "~/lib/.server/openai/requireThread";
 import { redisStore } from "~/lib/.server/redis/redis";
 import type { AssistantId } from "~/lib/assistantIds";
+import { triviaGameSchema } from "~/lib/gameSchema";
 import type { AssistantPayload, AsstIdStore } from "~/types/assistant";
 import type { NodeEnv } from "~/types/env";
 import NewGameForm from "~/ui/NewGameForm";
@@ -30,39 +31,49 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action() {
-  const thread = await requireThread({ prompt: NEW_GAME_PROMPT });
+  try {
+    const thread = await requireThread({ prompt: NEW_GAME_PROMPT });
 
-  // TODO: turn into requireEnv
-  const env = process.env.NODE_ENV as NodeEnv;
-  if (!env) {
-    throw new Error("no node env found");
-  }
-  const asstName = "createTriviaGame" satisfies AssistantId;
-
-  const asstIds = await redisStore.get<AsstIdStore>(asstName);
-
-  if (!asstIds) {
-    throw new Error("No assistant ids found.");
-  }
-
-  const game = await getAsstOutput({
-    asstId: asstIds[env],
-    threadId: thread.id,
-  });
-  const id = generateId();
-
-  await redisStore.set<AssistantPayload>(
-    id,
-    {
-      game,
-      threadId: thread.id,
-    },
-    {
-      ex: 60 * 60 * 24, // Expires in 24h
+    // TODO: turn into requireEnv
+    const env = process.env.NODE_ENV as NodeEnv;
+    if (!env) {
+      throw new Error("no node env found");
     }
-  );
+    const asstName = "createTriviaGame" satisfies AssistantId;
 
-  return redirect(`/games/${id}`);
+    const asstIds = await redisStore.get<AsstIdStore>(asstName);
+
+    if (!asstIds) {
+      throw new Error("No assistant ids found.");
+    }
+
+    const output = await getAsstOutput({
+      asstId: asstIds[env],
+      threadId: thread.id,
+    });
+
+    const game = triviaGameSchema.parse(output);
+
+    const id = generateId();
+
+    await redisStore.set<AssistantPayload>(
+      id,
+      {
+        game,
+        threadId: thread.id,
+      },
+      {
+        ex: 60 * 60 * 24, // Expires in 24h
+      }
+    );
+
+    return redirect(`/games/${id}`);
+  } catch (error) {
+    console.error("error: ", error);
+    return {
+      error: "Sorry, something went wrong.",
+    };
+  }
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
