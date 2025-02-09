@@ -3,6 +3,8 @@
 This is a demo app for the following blog posts:
 
 - [Creating App Features Using AI Assistant Structured Output](https://www.anders.co/blog/creating-app-features-using-ai-assistant-structured-output/).
+- [AI Assistant Output with End to End Type Safety](https://www.anders.co/blog/ai-asst-output-with-end-to-end-type-safety/)
+- [An AI Assistant Development Lifecycle](https://www.anders.co/blog/an-ai-assistant-development-lifecycle/)
 
 [View deployed app](https://andersco-structured-output-demo.vercel.app/)
 
