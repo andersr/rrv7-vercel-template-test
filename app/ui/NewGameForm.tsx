@@ -11,7 +11,7 @@ export default function NewGameForm() {
         <button
           type="submit"
           disabled={isNavigating}
-          className={twMerge("btn disabled:btn-disabled")}
+          className={twMerge("btn disabled:text-white")}
         >
           {isNavigating ? "Creating game..." : "New Trivia Game"}
         </button>
