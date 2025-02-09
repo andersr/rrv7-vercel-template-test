@@ -32,9 +32,9 @@ export async function action() {
     const thread = await requireThread({ prompt: CREATE_GAME_PROMPT });
     const env = requireEnv();
 
-    const asstName = "createTriviaGame" satisfies AssistantName;
-
-    const asstIds = await redisStore.get<AsstIdStore>(asstName);
+    const asstIds = await redisStore.get<AsstIdStore>(
+      "createTriviaGame" satisfies AssistantName
+    );
 
     if (!asstIds) {
       throw new Error("No assistant ids found.");
