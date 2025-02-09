@@ -1,6 +1,9 @@
+import { assistantConfigs } from "~/.server/assistants/configs";
+import {
+  ASSISTANT_NAMES,
+  type AssistantName,
+} from "~/.server/assistants/names";
 import { redisStore } from "~/.server/redis/redis";
-import { assistantConfigs } from "~/lib/assistantConfigs";
-import { ASSISTANT_NAMES, type AssistantName } from "~/lib/assistantNames";
 import type { AsstConfig, AsstIdStore } from "~/types/assistant";
 import type { NodeEnv } from "~/types/env";
 import { createAssistant } from "./helpers/createAssistant";
