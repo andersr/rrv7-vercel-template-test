@@ -1,4 +1,4 @@
-import type { AssistantName } from "~/lib/assistantNames";
+import type { AssistantName } from "~/.server/assistants/names";
 import type { AsstIdStore } from "~/types/assistant";
 import { redisStore } from "../redis/redis";
 

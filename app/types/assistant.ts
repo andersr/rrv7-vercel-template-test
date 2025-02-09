@@ -1,7 +1,6 @@
 import type { AssistantCreateParams } from "openai/resources/beta/assistants.mjs";
-import type { triviaGameSchema } from "~/lib/gameSchema";
+import type { TriviaGame, triviaGameSchema } from "~/lib/triviaGame/schemas";
 import type { NodeEnv } from "./env";
-import type { TriviaGame } from "./game";
 
 export interface AssistantPayload {
   threadId: string;
@@ -30,11 +29,6 @@ export interface AsstConfig {
    * Union of supported schemas
    */
   schema: typeof triviaGameSchema;
-}
-
-export interface AsstDataRequestInput {
-  threadId: string;
-  asstId: string;
 }
 
 /**

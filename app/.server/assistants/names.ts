@@ -1,5 +1,3 @@
-// TODO: rename to ASSISTANT_NAMES to disambiguate from OpenAI ids
-
 /**
  * Ids should be based on what the assistant outputs.
  */
