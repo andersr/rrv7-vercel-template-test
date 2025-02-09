@@ -6,10 +6,10 @@ import { openai } from "~/.server/openai/openai";
 import { ANOTHER_GAME_PROMPT } from "~/.server/openai/prompts";
 import { redisStore } from "~/.server/redis/redis";
 import { generateId } from "~/.server/utils/generateId";
-import type { AssistantName } from "~/lib/assistantNames";
+import { requireAsstIds } from "~/.server/utils/requireAsstIds";
+import { requireEnv } from "~/.server/utils/requireEnv";
 import { ERROR_PARAM } from "~/shared/params";
-import type { AssistantPayload, AsstIdStore } from "~/types/assistant";
-import type { NodeEnv } from "~/types/env";
+import type { AssistantPayload } from "~/types/assistant";
 import NewGameForm from "~/ui/NewGameForm";
 import QuestionHeader from "~/ui/QuestionHeader";
 import type { Route } from "./+types/games.$id";
@@ -30,6 +30,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   if (!payload) {
     throw redirect(`/?${ERROR_PARAM}=true`);
   }
+
   return {
     id: params?.id,
     game: payload.game,
@@ -52,18 +53,8 @@ export async function action({ params }: Route.ActionArgs) {
     content: ANOTHER_GAME_PROMPT,
   });
 
-  const env = process.env.NODE_ENV as NodeEnv; // TODO: parse the envs with Zod instead
-  if (env !== "development" && env !== "production") {
-    throw new Error("invalid env values");
-  }
-
-  const asstName = "createTriviaGame" satisfies AssistantName;
-
-  const asstIds = await redisStore.get<AsstIdStore>(asstName);
-
-  if (!asstIds) {
-    throw new Error("no asst ids found, cannot generate.");
-  }
+  const env = requireEnv();
+  const asstIds = await requireAsstIds("createTriviaGame");
 
   const output = await getAsstOutput({
     asstId: asstIds[env],
