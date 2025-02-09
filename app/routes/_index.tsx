@@ -6,6 +6,7 @@ import { redisStore } from "~/.server/redis/redis";
 import { generateId } from "~/.server/utils/generateId";
 import type { AssistantName } from "~/lib/assistantNames";
 import { triviaGameSchema } from "~/lib/gameSchema";
+import { ERROR_PARAM } from "~/shared/params";
 import type { AssistantPayload, AsstIdStore } from "~/types/assistant";
 import type { NodeEnv } from "~/types/env";
 import NewGameForm from "~/ui/NewGameForm";
@@ -18,15 +19,11 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  let errorMessage = "";
   const url = new URL(request.url);
-  const error = url.searchParams.get("error");
-  if (error) {
-    errorMessage = "Sorry, something went wrong. Please try again.";
-  }
+  const error = url.searchParams.get(ERROR_PARAM);
 
   return {
-    errorMessage,
+    errorMessage: error ? "Sorry, something went wrong. Please try again." : "",
   };
 }
 

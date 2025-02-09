@@ -7,6 +7,7 @@ import { ANOTHER_GAME_PROMPT } from "~/.server/openai/prompts";
 import { redisStore } from "~/.server/redis/redis";
 import { generateId } from "~/.server/utils/generateId";
 import type { AssistantName } from "~/lib/assistantNames";
+import { ERROR_PARAM } from "~/shared/params";
 import type { AssistantPayload, AsstIdStore } from "~/types/assistant";
 import type { NodeEnv } from "~/types/env";
 import NewGameForm from "~/ui/NewGameForm";
@@ -21,13 +22,13 @@ export function meta({}: Route.MetaArgs) {
 
 export async function loader({ params }: Route.LoaderArgs) {
   if (!params.id) {
-    throw redirect(`/?error=true`);
+    throw redirect(`/?${ERROR_PARAM}=true`);
   }
 
   const payload = await redisStore.get<AssistantPayload | null>(params.id);
 
   if (!payload) {
-    throw redirect(`/?error=true`);
+    throw redirect(`/?${ERROR_PARAM}=true`);
   }
   return {
     id: params?.id,
