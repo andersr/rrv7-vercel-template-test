@@ -5,5 +5,8 @@ export function requireEnv() {
   if (!env) {
     throw new Error("no node env found");
   }
+  if (env !== "development" && env !== "production") {
+    throw new Error("invalid env values");
+  }
   return env;
 }
