@@ -4,11 +4,11 @@ import { CREATE_GAME_PROMPT } from "~/.server/openai/prompts";
 import { requireThread } from "~/.server/openai/requireThread";
 import { redisStore } from "~/.server/redis/redis";
 import { generateId } from "~/.server/utils/generateId";
+import { requireEnv } from "~/.server/utils/requireEnv";
 import type { AssistantName } from "~/lib/assistantNames";
 import { triviaGameSchema } from "~/lib/gameSchema";
 import { ERROR_PARAM } from "~/shared/params";
 import type { AssistantPayload, AsstIdStore } from "~/types/assistant";
-import type { NodeEnv } from "~/types/env";
 import NewGameForm from "~/ui/NewGameForm";
 import type { Route } from "./+types/_index";
 
@@ -30,12 +30,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 export async function action() {
   try {
     const thread = await requireThread({ prompt: CREATE_GAME_PROMPT });
+    const env = requireEnv();
 
-    // TODO: turn into requireEnv
-    const env = process.env.NODE_ENV as NodeEnv;
-    if (!env) {
-      throw new Error("no node env found");
-    }
     const asstName = "createTriviaGame" satisfies AssistantName;
 
     const asstIds = await redisStore.get<AsstIdStore>(asstName);
