@@ -1,5 +1,5 @@
 import type { ThreadCreateParams } from "openai/resources/beta/threads/threads";
-import { openai } from "./openai";
+import { openai } from "../openai/openai";
 
 export async function requireThread({ prompt }: { prompt: string }) {
   try {
