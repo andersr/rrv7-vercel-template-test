@@ -1,12 +1,14 @@
 import { useEffect, useState, type JSX } from "react";
 import { redirect, useLocation } from "react-router";
 import { twMerge } from "tailwind-merge";
-import { ENV } from "~/lib/.server/ENV";
-import { generateId } from "~/lib/.server/generateId";
-import { getAsstOutput } from "~/lib/.server/openai/getAssistantOutput";
-import { NEW_GAME_PROMPT } from "~/lib/.server/openai/prompts";
-import { requireThread } from "~/lib/.server/openai/requireThread";
-import { redisCache } from "~/lib/.server/redis/redis";
+import { getAsstOutput } from "~/.server/openai/getAssistantOutput";
+import { openai } from "~/.server/openai/openai";
+import { ANOTHER_GAME_PROMPT } from "~/.server/openai/prompts";
+import { redisStore } from "~/.server/redis/redis";
+import { generateId } from "~/.server/utils/generateId";
+import { requireAsstIds } from "~/.server/utils/requireAsstIds";
+import { requireEnv } from "~/.server/utils/requireEnv";
+import { ERROR_PARAM } from "~/shared/params";
 import type { AssistantPayload } from "~/types/assistant";
 import NewGameForm from "~/ui/NewGameForm";
 import QuestionHeader from "~/ui/QuestionHeader";
@@ -20,14 +22,15 @@ export function meta({}: Route.MetaArgs) {
 
 export async function loader({ params }: Route.LoaderArgs) {
   if (!params.id) {
-    throw redirect(`/?error=true`);
+    throw redirect(`/?${ERROR_PARAM}=true`);
   }
 
-  const payload = await redisCache.get<AssistantPayload | null>(params.id);
+  const payload = await redisStore.get<AssistantPayload | null>(params.id);
 
   if (!payload) {
-    throw redirect(`/?error=true`);
+    throw redirect(`/?${ERROR_PARAM}=true`);
   }
+
   return {
     id: params?.id,
     game: payload.game,
@@ -35,31 +38,36 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 export async function action({ params }: Route.ActionArgs) {
-  let threadId: string = "";
+  const currentGame = await redisStore.get<AssistantPayload | null>(params.id);
 
-  const currentGame = await redisCache.get<AssistantPayload | null>(params.id);
-
-  if (currentGame && currentGame?.threadId) {
-    threadId = currentGame?.threadId;
-  } else {
-    const thread = await requireThread({
-      prompt: NEW_GAME_PROMPT,
-    });
-    threadId = thread.id;
+  if (!currentGame) {
+    throw new Error("no current game found.");
   }
 
+  if (!currentGame?.threadId) {
+    throw new Error("no game thread found.");
+  }
+
+  await openai.beta.threads.messages.create(currentGame?.threadId, {
+    role: "user",
+    content: ANOTHER_GAME_PROMPT,
+  });
+
+  const env = requireEnv();
+  const asstIds = await requireAsstIds("createTriviaGame");
+
   const output = await getAsstOutput({
-    asstId: ENV.OPENAI_ASST_ID_CREATE_GAME,
-    threadId,
+    asstId: asstIds[env],
+    threadId: currentGame.threadId,
   });
   const id = generateId();
 
-  await redisCache.set<string>(
+  await redisStore.set<AssistantPayload>(
     id,
-    JSON.stringify({
+    {
       game: output,
-      threadId,
-    } satisfies AssistantPayload),
+      threadId: currentGame.threadId,
+    },
     {
       ex: 60 * 60 * 24, // Expires in 24h
     }
@@ -86,6 +94,7 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
     }
     setCurrentView("answer");
   }
+
   function handleNext() {
     if (questionIndex === game?.questions.length - 1) {
       setCurrentView("end");
@@ -140,7 +149,7 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
         <button
           disabled={selectedChoice === ""}
           onClick={handleChoice}
-          className="btn"
+          className="btn cursor-pointer"
         >
           Submit Answer
         </button>
@@ -164,7 +173,7 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
           )}
         </p>
         <p>
-          <button onClick={handleNext} className="btn">
+          <button onClick={handleNext} className="btn cursor-pointer">
             {questionIndex === game?.questions.length - 1
               ? "Continue"
               : "Next Question"}

@@ -1,10 +1,13 @@
 import { redirect } from "react-router";
-import { ENV } from "~/lib/.server/ENV";
-import { generateId } from "~/lib/.server/generateId";
-import { getAsstOutput } from "~/lib/.server/openai/getAssistantOutput";
-import { NEW_GAME_PROMPT } from "~/lib/.server/openai/prompts";
-import { requireThread } from "~/lib/.server/openai/requireThread";
-import { redisCache } from "~/lib/.server/redis/redis";
+import { getAsstOutput } from "~/.server/openai/getAssistantOutput";
+import { CREATE_GAME_PROMPT } from "~/.server/openai/prompts";
+import { redisStore } from "~/.server/redis/redis";
+import { generateId } from "~/.server/utils/generateId";
+import { requireAsstIds } from "~/.server/utils/requireAsstIds";
+import { requireEnv } from "~/.server/utils/requireEnv";
+import { requireThread } from "~/.server/utils/requireThread";
+import { triviaGameSchema } from "~/lib/gameSchema";
+import { ERROR_PARAM } from "~/shared/params";
 import type { AssistantPayload } from "~/types/assistant";
 import NewGameForm from "~/ui/NewGameForm";
 import type { Route } from "./+types/_index";
@@ -16,38 +19,47 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  let errorMessage = "";
   const url = new URL(request.url);
-  const error = url.searchParams.get("error");
-  if (error) {
-    errorMessage = "Sorry, something went wrong. Please try again.";
-  }
+  const error = url.searchParams.get(ERROR_PARAM);
 
   return {
-    errorMessage,
+    errorMessage: error ? "Sorry, something went wrong. Please try again." : "",
   };
 }
 
 export async function action() {
-  const thread = await requireThread({ prompt: NEW_GAME_PROMPT });
-  const output = await getAsstOutput({
-    asstId: ENV.OPENAI_ASST_ID_CREATE_GAME,
-    threadId: thread.id,
-  });
-  const id = generateId();
+  try {
+    const thread = await requireThread({ prompt: CREATE_GAME_PROMPT });
+    const env = requireEnv();
+    const asstIds = await requireAsstIds("createTriviaGame");
 
-  await redisCache.set<string>(
-    id,
-    JSON.stringify({
-      game: output,
+    const output = await getAsstOutput({
+      asstId: asstIds[env],
       threadId: thread.id,
-    } satisfies AssistantPayload),
-    {
-      ex: 60 * 60 * 24, // Expires in 24h
-    }
-  );
+    });
 
-  return redirect(`/games/${id}`);
+    const game = triviaGameSchema.parse(output);
+
+    const id = generateId();
+
+    await redisStore.set<AssistantPayload>(
+      id,
+      {
+        game,
+        threadId: thread.id,
+      },
+      {
+        ex: 60 * 60 * 24, // Expires in 24h
+      }
+    );
+
+    return redirect(`/games/${id}`);
+  } catch (error) {
+    console.error("error: ", error);
+    return {
+      error: "Sorry, something went wrong.",
+    };
+  }
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {

@@ -38,18 +38,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <main className="prose prose-h1:text-primary-content container flex-1">
             {children}
           </main>
-          <footer className="prose text-center text-sm">
+          <footer className="prose text-center">
             <p className="mb-2">
-              This is a simple demo, in the form of a trivia game, of using
-              structured output from an AI Assistant.
+              This is a demo, in the form of a trivia game, of using structured
+              output from an AI Assistant.
             </p>
             <p>
               <a href="https://github.com/andersr/structured-response-demo">
                 Code Repo
-              </a>{" "}
-              |{" "}
-              <a href="https://www.anders.co/blog/creating-app-features-using-ai-assistant-structured-output/">
-                Blog Post
               </a>
             </p>
           </footer>
