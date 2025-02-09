@@ -1,6 +1,6 @@
 import { redirect } from "react-router";
 import { getAsstOutput } from "~/.server/openai/getAssistantOutput";
-import { NEW_GAME_PROMPT } from "~/.server/openai/prompts";
+import { CREATE_GAME_PROMPT } from "~/.server/openai/prompts";
 import { requireThread } from "~/.server/openai/requireThread";
 import { redisStore } from "~/.server/redis/redis";
 import { generateId } from "~/.server/utils/generateId";
@@ -32,7 +32,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export async function action() {
   try {
-    const thread = await requireThread({ prompt: NEW_GAME_PROMPT });
+    const thread = await requireThread({ prompt: CREATE_GAME_PROMPT });
 
     // TODO: turn into requireEnv
     const env = process.env.NODE_ENV as NodeEnv;

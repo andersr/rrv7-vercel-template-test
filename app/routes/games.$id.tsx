@@ -2,8 +2,8 @@ import { useEffect, useState, type JSX } from "react";
 import { redirect, useLocation } from "react-router";
 import { twMerge } from "tailwind-merge";
 import { getAsstOutput } from "~/.server/openai/getAssistantOutput";
-import { NEW_GAME_PROMPT } from "~/.server/openai/prompts";
-import { requireThread } from "~/.server/openai/requireThread";
+import { openai } from "~/.server/openai/openai";
+import { ANOTHER_GAME_PROMPT } from "~/.server/openai/prompts";
 import { redisStore } from "~/.server/redis/redis";
 import { generateId } from "~/.server/utils/generateId";
 import type { AssistantName } from "~/lib/assistantNames";
@@ -36,18 +36,20 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 export async function action({ params }: Route.ActionArgs) {
-  let threadId: string = "";
-
   const currentGame = await redisStore.get<AssistantPayload | null>(params.id);
 
-  if (currentGame && currentGame?.threadId) {
-    threadId = currentGame?.threadId;
-  } else {
-    const thread = await requireThread({
-      prompt: NEW_GAME_PROMPT,
-    });
-    threadId = thread.id;
+  if (!currentGame) {
+    throw new Error("no current game found.");
   }
+
+  if (!currentGame?.threadId) {
+    throw new Error("no game thread found.");
+  }
+
+  await openai.beta.threads.messages.create(currentGame?.threadId, {
+    role: "user",
+    content: ANOTHER_GAME_PROMPT,
+  });
 
   const env = process.env.NODE_ENV as NodeEnv; // TODO: parse the envs with Zod instead
   if (env !== "development" && env !== "production") {
@@ -64,7 +66,7 @@ export async function action({ params }: Route.ActionArgs) {
 
   const output = await getAsstOutput({
     asstId: asstIds[env],
-    threadId,
+    threadId: currentGame.threadId,
   });
   const id = generateId();
 
@@ -72,7 +74,7 @@ export async function action({ params }: Route.ActionArgs) {
     id,
     {
       game: output,
-      threadId,
+      threadId: currentGame.threadId,
     },
     {
       ex: 60 * 60 * 24, // Expires in 24h
@@ -155,7 +157,7 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
         <button
           disabled={selectedChoice === ""}
           onClick={handleChoice}
-          className="btn"
+          className="btn cursor-pointer"
         >
           Submit Answer
         </button>
@@ -179,7 +181,7 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
           )}
         </p>
         <p>
-          <button onClick={handleNext} className="btn">
+          <button onClick={handleNext} className="btn cursor-pointer">
             {questionIndex === game?.questions.length - 1
               ? "Continue"
               : "Next Question"}

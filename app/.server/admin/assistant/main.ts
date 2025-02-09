@@ -3,8 +3,8 @@ import { assistantConfigs } from "~/lib/assistantConfigs";
 import { ASSISTANT_NAMES, type AssistantName } from "~/lib/assistantNames";
 import type { AsstConfig, AsstIdStore } from "~/types/assistant";
 import type { NodeEnv } from "~/types/env";
-import { createAssistant } from "./assistant/helpers/createAssistant";
-import { updateAssistant } from "./assistant/helpers/updateAssistant";
+import { createAssistant } from "./helpers/createAssistant";
+import { updateAssistant } from "./helpers/updateAssistant";
 
 type AsstAction = "create" | "update";
 
