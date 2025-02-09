@@ -52,7 +52,6 @@ const update: asstHandlerFn = async ({ idStore, asstName, config, env }) => {
     if (!idStore?.development) {
       throw new Error("no dev asst id");
     }
-
     await updateAssistant({
       id: idStore.development,
       config,
