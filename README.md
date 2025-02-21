@@ -19,6 +19,6 @@ This is a demo app for the following blog posts:
 
 ## Assistants Admin
 
-- Create assistants: `npm run asst:create` - this will create an assistant for each environment and store the respective ids in upstash, using the assistant name as a a key.
+- Create assistants: `npm run asst:create` - this will create an assistant for each environment in OpenAI and store the respective ids from OpenAi in upstash, using the assistant name as a a key.
 - Update assistants: `npm run asst:update` - this will update the "development" assistant based on local config changes.
 - "Deploy" assistants: `npm run asst:deploy` - this will update the assistants for all environments, including production.
