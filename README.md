@@ -6,7 +6,7 @@ This is a demo app for the following blog posts:
 - [AI Assistant Output with End to End Type Safety](https://www.anders.co/blog/ai-asst-output-with-end-to-end-type-safety/)
 - [An AI Assistant Development Lifecycle](https://www.anders.co/blog/an-ai-assistant-development-lifecycle/)
 
-[View deployed app](https://andersco-structured-output-demo.vercel.app/)
+[View demo app](https://andersco-structured-output-demo.vercel.app/)
 
 ## Running the app locally
 
@@ -17,25 +17,8 @@ This is a demo app for the following blog posts:
 1. Add the api keys, assistant Ids, etc listed in the `.env` file.
 1. Run `npm run dev` to run the app locally
 
-## Creating the assistant
+## Assistants Admin
 
-These are configs I used for the Assistant. Feel free to use as is or modify as needed.
-
-### System instructions
-
-```text
-Create a 3-question multiple choice trivia game. For each game, randomly select 3 common trivia game categories and create one question in each category. Do not repeat questions that have been asked in previous games. Ensure one correct answer per question and logical, plausible distractor choices.
-
-Provide your response in JSON format using the following structure:
-
-- `questions`: An array of objects, where each object includes:
-  - `category`: The trivia category (e.g., "Music").
-  - `question`: The trivia question.
-  - `choices`: An array of answer choices.
-  - `correctAnswer`: The correct answer.
-
-```
-
-### Response format
-
-Select `json_object`
+- Create assistants: `npm run asst:create` - this will create an assistant for each environment in OpenAI and store the respective ids from OpenAi in upstash, using the assistant name as a a key.
+- Update assistants: `npm run asst:update` - this will update the "development" assistant based on local config changes.
+- "Deploy" assistants: `npm run asst:deploy` - this will update the assistants for all environments, including production.
