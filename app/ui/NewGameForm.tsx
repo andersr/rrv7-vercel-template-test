@@ -17,7 +17,9 @@ export default function NewGameForm() {
         </button>
       </Form>
       {isNavigating && (
-        <div className="mt-4 text-sm">This might take a moment...</div>
+        <div role="alert" aria-busy="true" className="mt-4 text-sm">
+          This might take a moment...
+        </div>
       )}
     </>
   );

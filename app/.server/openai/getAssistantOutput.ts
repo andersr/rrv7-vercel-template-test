@@ -1,6 +1,7 @@
 import type { AsstDataRequestInput } from "~/types/assistant";
 import { openai } from "./openai";
 
+// TODO: add vitest - mock openai
 export async function getAsstOutput({
   threadId,
   asstId,

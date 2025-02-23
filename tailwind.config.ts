@@ -18,8 +18,5 @@ export default {
       },
     },
   },
-  plugins: [require("@tailwindcss/typography"), require("daisyui")],
-  daisyui: {
-    themes: ["lemonade"],
-  },
+  plugins: [require("@tailwindcss/typography")],
 } satisfies Config;
