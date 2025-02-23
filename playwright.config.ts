@@ -29,7 +29,7 @@ export default defineConfig({
     baseURL:
       process.env.NODE_ENV === "production"
         ? "http://localhost:3000"
-        : "http://localhost:8080",
+        : "http://localhost:5173",
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
