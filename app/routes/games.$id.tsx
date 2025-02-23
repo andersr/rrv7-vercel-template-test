@@ -1,14 +1,9 @@
 import { useEffect, useState, type JSX } from "react";
-import { redirect, useLocation } from "react-router";
+import { redirect, useLoaderData, useLocation } from "react-router";
 import { twMerge } from "tailwind-merge";
-import { getAsstOutput } from "~/.server/openai/getAssistantOutput";
-import { openai } from "~/.server/openai/openai";
 import { redisStore } from "~/.server/redis/redis";
-import { generateId } from "~/.server/utils/generateId";
-import { requireAsstIds } from "~/.server/utils/requireAsstIds";
-import { requireEnv } from "~/.server/utils/requireEnv";
-import { ANOTHER_GAME_PROMPT } from "~/lib/triviaGame/prompts";
-import { ERROR_PARAM } from "~/shared/params";
+import { getHostUrl } from "~/.server/utils/getHostUrl";
+import { ERROR_PARAM, THREAD_ID_PARAM } from "~/shared/params";
 import type { AssistantPayload } from "~/types/assistant";
 import NewGameForm from "~/ui/NewGameForm";
 import QuestionHeader from "~/ui/QuestionHeader";
@@ -20,24 +15,27 @@ export function meta({}: Route.MetaArgs) {
   return [{ title: "Structured Output Demo" }];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   if (!params.id) {
+    console.log("no id param");
     throw redirect(`/?${ERROR_PARAM}=true`);
   }
 
-  const payload = await redisStore.get<AssistantPayload | null>(params.id);
+  const res = await fetch(`${getHostUrl(request)}/api/store/${params.id}`);
+  const data = (await res.json()) as AssistantPayload | null;
 
-  if (!payload) {
+  if (!data) {
+    console.log("no payload");
     throw redirect(`/?${ERROR_PARAM}=true`);
   }
 
   return {
     id: params?.id,
-    game: payload.game,
+    game: data.game,
   };
 }
 
-export async function action({ params }: Route.ActionArgs) {
+export async function action({ params, request }: Route.ActionArgs) {
   const currentGame = await redisStore.get<AssistantPayload | null>(params.id);
 
   if (!currentGame) {
@@ -48,32 +46,16 @@ export async function action({ params }: Route.ActionArgs) {
     throw new Error("no game thread found.");
   }
 
-  await openai.beta.threads.messages.create(currentGame?.threadId, {
-    role: "user",
-    content: ANOTHER_GAME_PROMPT,
-  });
+  const url = new URL(`${getHostUrl(request)}/api/games/new`);
+  url.searchParams.set(THREAD_ID_PARAM, currentGame?.threadId);
+  const res = await fetch(url.href);
+  const data = await res.json();
 
-  const env = requireEnv();
-  const asstIds = await requireAsstIds("createTriviaGame");
+  if (!data?.id) {
+    throw new Error("No game id returned");
+  }
 
-  const output = await getAsstOutput({
-    asstId: asstIds[env],
-    threadId: currentGame.threadId,
-  });
-  const id = generateId();
-
-  await redisStore.set<AssistantPayload>(
-    id,
-    {
-      game: output,
-      threadId: currentGame.threadId,
-    },
-    {
-      ex: 60 * 60 * 24, // Expires in 24h
-    }
-  );
-
-  return redirect(`/games/${id}`);
+  return redirect(`/games/${data.id}`);
 }
 
 export default function GameDetails({ loaderData }: Route.ComponentProps) {
@@ -83,8 +65,9 @@ export default function GameDetails({ loaderData }: Route.ComponentProps) {
   const [selectedChoice, setSelectedChoice] = useState("");
   const [correctAnswers, setCorrectAnswers] = useState(0);
 
-  const game = loaderData?.game;
-  const currentQuestion = game?.questions
+  const { game } = useLoaderData<typeof loader>();
+
+  const currentQuestion = game.questions
     ? game?.questions[questionIndex]
     : null;
 

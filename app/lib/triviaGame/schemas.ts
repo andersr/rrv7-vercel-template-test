@@ -6,6 +6,7 @@ const triviaQuestionSchema = z.object({
   choices: z
     .string()
     .array()
+    .length(4)
     .describe(
       "The answer choices, which should include one correct answer and three distractor choices."
     ),
@@ -22,3 +23,14 @@ export const triviaGameSchema = z.object({
 
 export type TriviaGame = z.infer<typeof triviaGameSchema>;
 export type TriviaGameQuestion = z.infer<typeof triviaQuestionSchema>;
+
+const TEST_GAME: TriviaGame = {
+  questions: [
+    {
+      category: "Science",
+      question: "What is the chemical symbol for the element gold?",
+      choices: ["Au", "Ag", "Pb", "Fe"],
+      correctAnswer: "Au",
+    },
+  ],
+};
